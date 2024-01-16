@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 import { LoginUserDto } from 'src/user/dto/user.dto';
 import { User } from '@prisma/client';
 import { UserWithoutPassword } from 'src/types/user.type';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
