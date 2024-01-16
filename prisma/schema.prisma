@@ -7,28 +7,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  DOCTOR
+  PATIENT
+  ADMIN
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String
+  name     String
+  token    String?
+  role     UserRole
+  doctor   Doctor?
+  patient  Patient?
+}
+
 model Doctor {
-  id Int @default(autoincrement()) @id
+  id           Int             @id @default(autoincrement())
   appointments Appointment[]
+  patients     DoctorPatient[]
   departmentID Int
-  department Department @relation(fields: [departmentID], references: [id])
+  department   Department      @relation(fields: [departmentID], references: [id])
+  userId       Int             @unique
+  user         User            @relation(fields: [userId], references: [id])
 }
 
 model Patient {
-  id Int @default(autoincrement()) @id
+  id           Int             @id @default(autoincrement())
   appointments Appointment[]
+  doctors      DoctorPatient[]
+  userId       Int             @unique
+  user         User            @relation(fields: [userId], references: [id])
+}
+
+model DoctorPatient {
+  id        Int     @id @default(autoincrement())
+  doctorID  Int
+  doctor    Doctor  @relation(fields: [doctorID], references: [id])
+  patientID Int
+  patient   Patient @relation(fields: [patientID], references: [id])
+
+  @@unique([doctorID, patientID])
 }
 
 model Department {
-  id Int @default(autoincrement()) @id
-  name String
+  id      Int      @id @default(autoincrement())
+  name    String
   doctors Doctor[]
 }
 
 model Appointment {
-  id Int @default(autoincrement()) @id
-  doctorID Int
-  doctor Doctor @relation(fields: [doctorID], references: [id])
+  id        Int      @id @default(autoincrement())
+  doctorID  Int
+  doctor    Doctor   @relation(fields: [doctorID], references: [id])
   patientID Int
-  patient Patient @relation(fields: [patientID], references: [id])
+  patient   Patient  @relation(fields: [patientID], references: [id])
+  createdAt DateTime @default(now())
 }
