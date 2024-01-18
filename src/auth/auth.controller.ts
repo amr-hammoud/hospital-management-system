@@ -7,9 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginUserDto } from 'src/user/dto/user.dto';
-import { User } from '@prisma/client';
-import { UserWithoutPassword } from 'src/types/user.type';
+import { LoginUserDto, LoginUserResponseDto } from 'src/user/dto/user.dto';
 import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
@@ -19,7 +17,7 @@ export class AuthController {
   @Post('login')
   login(
     @Body() loginInfo: LoginUserDto,
-  ): Promise<{ user: UserWithoutPassword; token: string }> {
+  ): Promise<LoginUserResponseDto> {
     return this.auth.authenticateUser(loginInfo.email, loginInfo.password);
   }
 

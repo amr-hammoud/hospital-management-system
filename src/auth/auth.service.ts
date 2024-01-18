@@ -2,12 +2,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserWithoutPassword } from 'src/types/user.type';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'prisma/prisma.service';
+import { LoginUserResponseDto } from 'src/user/dto/user.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private prisma: PrismaService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -16,20 +18,50 @@ export class AuthService {
   async authenticateUser(
     email: string,
     password: string,
-  ): Promise<{ user: UserWithoutPassword; token: string }> {
+  ): Promise<LoginUserResponseDto> {
+    let response: LoginUserResponseDto = {
+      user: {
+        id: null,
+        email: '',
+        name: '',
+        role: null,
+        profileID: null,
+        departmentID: null,
+      },
+      token: '',
+    };
+
     const user = await this.userService.findOneByEmail(email);
 
     if (!user || !(await this.comparePasswords(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const userWithoutPassword = { ...user, password: undefined };
+    response.user.id = user.id;
+    response.user.email = user.email;
+    response.user.name = user.name;
+    response.user.role = user.role;
+
+    if (user.role === 'DOCTOR') {
+      const doctor = await this.prisma.doctor.findUniqueOrThrow({
+        where: { userId: user.id },
+      });
+      response.user.profileID = doctor.id;
+      response.user.departmentID = doctor.departmentID;
+    } else if (user.role === 'PATIENT') {
+      const patient = await this.prisma.patient.findUniqueOrThrow({
+        where: { userId: user.id },
+      });
+      response.user.profileID = patient.id;
+    }
 
     const secretKey = this.configService.get<string>('SECRETKEY');
+    const token = await this.jwtService.signAsync(response.user, {
+      secret: secretKey,
+    });
+    response.token = token;
 
-    const token = await this.jwtService.signAsync(userWithoutPassword, { secret: secretKey });
-
-    return { user: userWithoutPassword, token };
+    return response;
   }
 
   private async comparePasswords(
