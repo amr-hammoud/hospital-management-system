@@ -58,11 +58,21 @@ model Department {
   doctors Doctor[]
 }
 
+enum AppointmentStatus {
+  Pending
+  Done
+}
+
 model Appointment {
   id        Int      @id @default(autoincrement())
+  dateTime  DateTime
+  duration  Int
+  status    AppointmentStatus @default(Pending)
+  Accepted  Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
   doctorID  Int
   doctor    Doctor   @relation(fields: [doctorID], references: [id])
   patientID Int
   patient   Patient  @relation(fields: [patientID], references: [id])
-  createdAt DateTime @default(now())
 }
