@@ -43,6 +43,7 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   }
 
+  @UseGuards(new RoleGuard(['ADMIN']))
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
