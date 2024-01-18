@@ -75,4 +75,6 @@ model Appointment {
   doctor    Doctor   @relation(fields: [doctorID], references: [id])
   patientID Int
   patient   Patient  @relation(fields: [patientID], references: [id])
+
+  @@unique([doctorID,dateTime])
 }
