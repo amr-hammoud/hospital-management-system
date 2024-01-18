@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { User } from '@prisma/client';
@@ -22,6 +26,34 @@ export class UserService {
         role,
       },
     });
+
+    if (!user) {
+      throw new InternalServerErrorException('Error creating user');
+    }
+
+    if (role === 'DOCTOR') {
+      // TODO: Take departmentID from user input
+      const doctor = await this.prisma.doctor.create({
+        data: {
+          userId: user.id,
+          departmentID: 7,
+        },
+      });
+
+      if (!doctor) {
+        throw new InternalServerErrorException('Error creating doctor');
+      }
+    } else if (role === 'PATIENT') {
+      const patient = await this.prisma.patient.create({
+        data: {
+          userId: user.id,
+        },
+      });
+
+      if (!patient) {
+        throw new InternalServerErrorException('Error creating patient');
+      }
+    }
 
     const returningUser = { ...user, password: undefined };
 
