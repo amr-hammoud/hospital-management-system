@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/appointment.dto';
 import { RoleGuard } from 'src/auth/role.guard';
@@ -9,7 +19,9 @@ export class AppointmentController {
 
   @UseGuards(new RoleGuard(['PATIENT']))
   @Post()
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
+  create(
+    @Body() createAppointmentDto: CreateAppointmentDto,
+  ) {
     return this.appointmentService.create(createAppointmentDto);
   }
 
@@ -27,9 +39,9 @@ export class AppointmentController {
   // update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
   //   return this.appointmentService.update(+id, updateAppointmentDto);
   // }
-
+  @UseGuards(new RoleGuard(['PATIENT']))
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentService.remove(+id);
+  remove(@Param('id') id: string, @Req() request: Request,) {
+    return this.appointmentService.remove(+id, request);
   }
 }
