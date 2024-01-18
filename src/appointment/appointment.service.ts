@@ -8,33 +8,37 @@ import {
 } from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/appointment.dto';
 import { PrismaService } from 'prisma/prisma.service';
-import { Appointment } from '@prisma/client';
+import { Appointment, User } from '@prisma/client';
 
 @Injectable()
 export class AppointmentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createAppointmentDto: CreateAppointmentDto): Promise<Object> {
+  async create(
+    createAppointmentDto: CreateAppointmentDto,
+    @Req() request: Request,
+  ): Promise<Object> {
     try {
-      const appointment = await this.prisma.appointment.create({
-        data: {
-          doctorID: createAppointmentDto.doctorID,
-          patientID: createAppointmentDto.patientID,
-          dateTime: new Date(createAppointmentDto.dateTime),
-          duration: 30,
-        },
-      });
+      const user = request['user'];
+        const appointment = await this.prisma.appointment.create({
+          data: {
+            doctorID: createAppointmentDto.doctorID,
+            patientID: user.profileID,
+            dateTime: new Date(createAppointmentDto.dateTime),
+            duration: 30,
+          },
+        });
 
-      return {
-        data: appointment,
-        message: 'Appointment Created Successfully',
-        statusCode: 201,
-      };
+        return {
+          data: appointment,
+          message: 'Appointment Created Successfully',
+          statusCode: 201,
+        };
     } catch (error) {
       if (error.code === 'P2002') {
         throw new ConflictException('Appointment time slot is already booked.');
       } else {
-        throw new InternalServerErrorException();
+        throw error;
       }
     }
   }
@@ -43,8 +47,17 @@ export class AppointmentService {
     return `This action returns all appointment`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} appointment`;
+  async findOne(id: number): Promise<Appointment> {
+    try {
+      const appointment = await this.prisma.appointment.findUniqueOrThrow({
+        where: {
+          id,
+        },
+      });
+      return appointment;
+    } catch (error) {
+      throw new NotFoundException('Appointment Not Found');
+    }
   }
 
   // update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
@@ -52,19 +65,10 @@ export class AppointmentService {
   // }
 
   async remove(id: number, @Req() request: Request): Promise<Object> {
-    const user = request['user'];
-    let appointment: Appointment;
     try {
-      appointment = await this.prisma.appointment.findUniqueOrThrow({
-        where: {
-          id,
-        },
-      });
-    } catch (error) {
-      throw new NotFoundException('Appointment Not Found');
-    }
+      const user = request['user'];
+      const appointment = await this.findOne(id);
 
-    try {
       if (appointment.id) {
         if (appointment.patientID === user.profileID) {
           const deleteAppointment = await this.prisma.appointment.delete({
@@ -80,7 +84,7 @@ export class AppointmentService {
             };
           }
         } else {
-          throw new UnauthorizedException
+          throw new UnauthorizedException();
         }
       } else {
         throw new NotFoundException('Appointment Not Found');

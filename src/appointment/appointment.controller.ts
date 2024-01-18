@@ -21,8 +21,9 @@ export class AppointmentController {
   @Post()
   create(
     @Body() createAppointmentDto: CreateAppointmentDto,
+    @Req() request: Request
   ) {
-    return this.appointmentService.create(createAppointmentDto);
+    return this.appointmentService.create(createAppointmentDto, request);
   }
 
   @Get()
@@ -41,7 +42,7 @@ export class AppointmentController {
   // }
   @UseGuards(new RoleGuard(['PATIENT']))
   @Delete(':id')
-  remove(@Param('id') id: string, @Req() request: Request,) {
+  remove(@Param('id') id: string, @Req() request: Request) {
     return this.appointmentService.remove(+id, request);
   }
 }
