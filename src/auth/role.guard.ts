@@ -5,9 +5,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AdminGuard extends AuthGuard implements CanActivate {
+export class RoleGuard extends AuthGuard implements CanActivate {
+  private allowedRoles: string[];
+
+  constructor(allowedRoles: string[]) {
+    super(new JwtService(), new ConfigService());
+    this.allowedRoles = allowedRoles;
+  }
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const canActivate = await super.canActivate(context);
 
@@ -18,10 +27,10 @@ export class AdminGuard extends AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const userRole = request['user'].role;
 
-    if (userRole === 'ADMIN') {
+    if (this.allowedRoles.includes(userRole)) {
       return true;
     }
 
-    throw new UnauthorizedException('Access Denied. User is not an admin.');
+    throw new UnauthorizedException('Access Denied');
   }
 }
