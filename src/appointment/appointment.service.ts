@@ -64,6 +64,40 @@ export class AppointmentService {
   //   return `This action updates a #${id} appointment`;
   // }
 
+  async updateStatus(id: number, @Req() request: Request): Promise<Object> {
+    try {
+      const user = request['user'];
+      const appointment = await this.findOne(id);
+
+      if (appointment.id) {
+        if (appointment.patientID === user.profileID) {
+          const updatedAppointment = await this.prisma.appointment.update({
+            where: {
+              id,
+            },
+            data: {
+              status: 'Done',
+            },
+          });
+
+          return {
+            data: updatedAppointment,
+            message: 'Appointment status updated to Done',
+            statusCode: 200,
+          };
+        } else {
+          throw new UnauthorizedException(
+            'Unauthorized to update appointment status',
+          );
+        }
+      } else {
+        throw new NotFoundException('Appointment Not Found');
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async remove(id: number, @Req() request: Request): Promise<Object> {
     try {
       const user = request['user'];

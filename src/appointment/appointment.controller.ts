@@ -26,6 +26,16 @@ export class AppointmentController {
     return this.appointmentService.create(createAppointmentDto, request);
   }
 
+  @UseGuards(new RoleGuard(['PATIENT']))
+  @Patch(':id/update-status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() UpdateAppointmentStatusDto: UpdateAppointmentStatusDto,
+    @Req() request: Request
+  ) {
+    return this.appointmentService.updateStatus(+id, request);
+  }
+
   @Get()
   findAll() {
     return this.appointmentService.findAll();
