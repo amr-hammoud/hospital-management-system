@@ -7,12 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -20,6 +22,7 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -27,7 +30,22 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey,
       });
-      request['user'] = payload;
+
+      const verifyToken = await this.prisma.user.findUnique({
+        where: {
+          id: payload.id,
+        },
+        select: {
+          token: true,
+        },
+      });
+
+      if(token === verifyToken.token){
+        request['user'] = payload;
+      } else {
+        throw new UnauthorizedException("You're Logged Out")
+      }
+
     } catch {
       throw new UnauthorizedException();
     }

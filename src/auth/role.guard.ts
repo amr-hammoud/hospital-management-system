@@ -7,13 +7,14 @@ import {
 import { AuthGuard } from './auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class RoleGuard extends AuthGuard implements CanActivate {
   private allowedRoles: string[];
 
   constructor(allowedRoles: string[]) {
-    super(new JwtService(), new ConfigService());
+    super(new JwtService(), new ConfigService(), new PrismaService());
     this.allowedRoles = allowedRoles;
   }
 
