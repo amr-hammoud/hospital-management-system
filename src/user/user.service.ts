@@ -60,8 +60,19 @@ export class UserService {
     return returningUser;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findAll(page: number, pageSize: number): Promise<User[]> {
+    const skip = (page - 1) * pageSize;
+
+    const users = await this.prisma.user.findMany({
+      skip,
+      take: pageSize,
+    });
+
+    if (!users || users.length === 0) {
+      throw new NotFoundException('No users found');
+    }
+
+    return users;
   }
 
   async findOne(id: number): Promise<User | null> {

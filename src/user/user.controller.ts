@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
@@ -19,13 +21,17 @@ export class UserController {
 
   @UseGuards(new RoleGuard(['ADMIN']))
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
+  @UseGuards(new RoleGuard(['ADMIN']))
   @Get()
-  async findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  async findAll(
+    @Query('page', new ParseIntPipe()) page?: number,
+    @Query('pageSize', new ParseIntPipe()) pageSize?: number,
+  ): Promise<User[]> {
+    return this.userService.findAll(page, pageSize);
   }
 
   @Get(':id')
