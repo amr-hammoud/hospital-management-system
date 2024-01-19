@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -79,5 +79,22 @@ export class AuthService {
     hashedPassword: string,
   ): Promise<boolean> {
     return bcrypt.compare(plainTextPassword, hashedPassword);
+  }
+
+  async logout(@Req() request: Request){
+    const user = request['user'];
+    const { id } = user;
+    const markLogin = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        token: null,
+      }
+    });
+    return {
+      message: "Logged Out Successfully",
+      statusCode: 200,
+    }
   }
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -15,9 +16,7 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('login')
-  login(
-    @Body() loginInfo: LoginUserDto,
-  ): Promise<LoginUserResponseDto> {
+  login(@Body() loginInfo: LoginUserDto): Promise<LoginUserResponseDto> {
     return this.auth.authenticateUser(loginInfo.email, loginInfo.password);
   }
 
@@ -25,5 +24,11 @@ export class AuthController {
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('logout')
+  logout(@Req() request: Request) {
+    return this.auth.logout(request);
   }
 }
