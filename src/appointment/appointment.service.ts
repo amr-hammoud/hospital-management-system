@@ -6,7 +6,7 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateAppointmentDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
+import { CreateAppointmentDto, UpdateAppointmentAcceptanceDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { Appointment, User } from '@prisma/client';
 
@@ -85,6 +85,40 @@ export class AppointmentService {
         } else {
           throw new UnauthorizedException(
             'Unauthorized to update appointment status',
+          );
+        }
+      } else {
+        throw new NotFoundException('Appointment Not Found');
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateAcceptance(id: number, UpdateAppointmentAcceptanceDto: UpdateAppointmentAcceptanceDto, @Req() request: Request): Promise<Object> {
+    try {
+      const user = request['user'];
+      const appointment = await this.findOne(id);
+
+      if (appointment.id) {
+        if (appointment.doctorID === user.profileID) {
+          const updatedAppointment = await this.prisma.appointment.update({
+            where: {
+              id,
+            },
+            data: {
+              Accepted: UpdateAppointmentAcceptanceDto.Accepted,
+            },
+          });
+
+          return {
+            data: updatedAppointment,
+            message: `Appointment ${UpdateAppointmentAcceptanceDto.Accepted ? 'Accepted' : 'Rejected'}`,
+            statusCode: 200,
+          };
+        } else {
+          throw new UnauthorizedException(
+            'Unauthorized to update appointment Acceptance',
           );
         }
       } else {

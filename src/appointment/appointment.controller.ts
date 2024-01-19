@@ -10,7 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
-import { CreateAppointmentDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
+import { CreateAppointmentDto, UpdateAppointmentAcceptanceDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
 import { RoleGuard } from 'src/auth/role.guard';
 
 @Controller('appointment')
@@ -34,6 +34,16 @@ export class AppointmentController {
     @Req() request: Request
   ) {
     return this.appointmentService.updateStatus(+id, UpdateAppointmentStatusDto, request);
+  }
+
+  @UseGuards(new RoleGuard(['DOCTOR']))
+  @Patch(':id/update-acceptance')
+  updateAcceptance(
+    @Param('id') id: string,
+    @Body() UpdateAppointmentAcceptanceDto: UpdateAppointmentAcceptanceDto,
+    @Req() request: Request
+  ) {
+    return this.appointmentService.updateAcceptance(+id, UpdateAppointmentAcceptanceDto, request);
   }
 
   @Get()

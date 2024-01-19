@@ -8,3 +8,6 @@ export class CreateAppointmentDto {
 export class UpdateAppointmentStatusDto {
     status: $Enums.AppointmentStatus;
 }
+export class UpdateAppointmentAcceptanceDto {
+    Accepted: boolean;
+}
