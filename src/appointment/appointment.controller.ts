@@ -10,7 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
-import { CreateAppointmentDto } from './dto/appointment.dto';
+import { CreateAppointmentDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
 import { RoleGuard } from 'src/auth/role.guard';
 
 @Controller('appointment')
@@ -40,6 +40,7 @@ export class AppointmentController {
   // update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
   //   return this.appointmentService.update(+id, updateAppointmentDto);
   // }
+
   @UseGuards(new RoleGuard(['PATIENT']))
   @Delete(':id')
   remove(@Param('id') id: string, @Req() request: Request) {

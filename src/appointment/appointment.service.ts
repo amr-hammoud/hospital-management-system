@@ -20,20 +20,20 @@ export class AppointmentService {
   ): Promise<Object> {
     try {
       const user = request['user'];
-        const appointment = await this.prisma.appointment.create({
-          data: {
-            doctorID: createAppointmentDto.doctorID,
-            patientID: user.profileID,
-            dateTime: new Date(createAppointmentDto.dateTime),
-            duration: 30,
-          },
-        });
+      const appointment = await this.prisma.appointment.create({
+        data: {
+          doctorID: createAppointmentDto.doctorID,
+          patientID: user.profileID,
+          dateTime: new Date(createAppointmentDto.dateTime),
+          duration: 30,
+        },
+      });
 
-        return {
-          data: appointment,
-          message: 'Appointment Created Successfully',
-          statusCode: 201,
-        };
+      return {
+        data: appointment,
+        message: 'Appointment Created Successfully',
+        statusCode: 201,
+      };
     } catch (error) {
       if (error.code === 'P2002') {
         throw new ConflictException('Appointment time slot is already booked.');
