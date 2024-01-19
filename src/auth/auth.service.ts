@@ -61,6 +61,16 @@ export class AuthService {
     });
     response.token = token;
 
+    const { id } = user;
+    const markLogin = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        token,
+      }
+    });
+
     return response;
   }
 
