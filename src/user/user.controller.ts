@@ -30,8 +30,9 @@ export class UserController {
   async findAll(
     @Query('page', new ParseIntPipe()) page?: number,
     @Query('pageSize', new ParseIntPipe()) pageSize?: number,
+    @Query('admins') admins?: boolean,
   ): Promise<User[]> {
-    return this.userService.findAll(page, pageSize);
+    return this.userService.findAll(page, pageSize, admins);
   }
 
   @Get(':id')

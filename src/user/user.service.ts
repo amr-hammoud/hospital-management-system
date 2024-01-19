@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'prisma/prisma.service';
-import { User } from '@prisma/client';
+import { $Enums, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UserWithoutPassword } from 'src/types/user.type';
 
@@ -60,13 +60,30 @@ export class UserService {
     return returningUser;
   }
 
-  async findAll(page: number, pageSize: number): Promise<User[]> {
+  async findAll(
+    page: number,
+    pageSize: number,
+    admins: boolean,
+  ): Promise<User[]> {
     const skip = (page - 1) * pageSize;
+    let users;
 
-    const users = await this.prisma.user.findMany({
-      skip,
-      take: pageSize,
-    });
+    if (admins) {
+      users = await this.prisma.user.findMany({
+        skip,
+        take: pageSize,
+      });
+    } else {
+      users = await this.prisma.user.findMany({
+        skip,
+        take: pageSize,
+        where: {
+          role: {
+            in: ['DOCTOR', 'PATIENT'],
+          },
+        },
+      });
+    }
 
     if (!users || users.length === 0) {
       throw new NotFoundException('No users found');
