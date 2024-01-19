@@ -6,7 +6,7 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateAppointmentDto } from './dto/appointment.dto';
+import { CreateAppointmentDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { Appointment, User } from '@prisma/client';
 
@@ -60,11 +60,8 @@ export class AppointmentService {
     }
   }
 
-  // update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
-  //   return `This action updates a #${id} appointment`;
-  // }
 
-  async updateStatus(id: number, @Req() request: Request): Promise<Object> {
+  async updateStatus(id: number, UpdateAppointmentStatusDto: UpdateAppointmentStatusDto, @Req() request: Request): Promise<Object> {
     try {
       const user = request['user'];
       const appointment = await this.findOne(id);
@@ -76,13 +73,13 @@ export class AppointmentService {
               id,
             },
             data: {
-              status: 'Done',
+              status: UpdateAppointmentStatusDto.status,
             },
           });
 
           return {
             data: updatedAppointment,
-            message: 'Appointment status updated to Done',
+            message: `Appointment status updated to ${UpdateAppointmentStatusDto.status}`,
             statusCode: 200,
           };
         } else {

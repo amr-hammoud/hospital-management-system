@@ -33,7 +33,7 @@ export class AppointmentController {
     @Body() UpdateAppointmentStatusDto: UpdateAppointmentStatusDto,
     @Req() request: Request
   ) {
-    return this.appointmentService.updateStatus(+id, request);
+    return this.appointmentService.updateStatus(+id, UpdateAppointmentStatusDto, request);
   }
 
   @Get()
